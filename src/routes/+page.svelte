@@ -4,10 +4,29 @@
 import mapboxgl from "mapbox-gl";
 import "../../node_modules/mapbox-gl/dist/mapbox-gl.css";
 import { onMount } from "svelte";
+import * as d3 from "d3";
 
 mapboxgl.accessToken = "pk.eyJ1IjoibGVpdG9uNjgiLCJhIjoiY21hcGg5azN1MGg4bDJvcHl3Y2V0emtubSJ9.5rroCSCepwuVL_vZ8PtB_A";
 
 let map;
+let stations = []
+
+async function loadStationData() {
+    try {
+        const csvUrl = 'https://vis-society.github.io/labs/8/data/bluebikes-stations.csv';
+        const data = await d3.csv(csvUrl);
+        
+        stations = data.map(station => ({
+            id: station.Number,
+            name: station.NAME,
+            Lat: +station.Lat,
+            Long: +station.Long,
+        }));
+        // console.log('Stations loaded:', stations.length);
+    } catch (error) {
+        console.error('Error loading station data:', error);
+    }
+}
 
 async function initMap() {
 	map = new mapboxgl.Map({
@@ -17,10 +36,18 @@ async function initMap() {
 		style: "mapbox://styles/mapbox/streets-v12",
 	});
 	await new Promise(resolve => map.on("load", resolve));
-	map.addSource("boston_route", {
+	
+    map.addSource("boston_route", {
 		type: "geojson",
 		data: "https://bostonopendata-boston.opendata.arcgis.com/datasets/boston::existing-bike-network-2022.geojson?outSR=%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D",
 	});
+
+    // Step 2.4
+    	map.addSource("cambridge_route", {
+		type: "geojson",
+		data: "https://raw.githubusercontent.com/cambridgegis/cambridgegis_data/main/Recreation/Bike_Facilities/RECREATION_BikeFacilities.geojson",
+	});
+
 
     // Step 2.2
     map.addLayer({
@@ -29,6 +56,9 @@ async function initMap() {
         source: "boston_route", // The id we specified in `addSource()`
         paint: {
             // paint params, e.g. colors, thickness, etc.
+            'line-color': "green",
+            'line-width': 1,
+            'line-opacity': 1,
         },
     });
 
@@ -36,9 +66,9 @@ async function initMap() {
 
 onMount(() => {
 	initMap();
+
+
 });
-
-
 
 // onMount(() => {
 // 	let map = new mapboxgl.Map({
