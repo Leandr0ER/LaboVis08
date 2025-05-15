@@ -1,5 +1,3 @@
-<!-- <h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p> -->
 <script>
 import mapboxgl from "mapbox-gl";
 import "../../node_modules/mapbox-gl/dist/mapbox-gl.css";
@@ -9,7 +7,9 @@ import * as d3 from "d3";
 mapboxgl.accessToken = "pk.eyJ1IjoibGVpdG9uNjgiLCJhIjoiY21hcGg5azN1MGg4bDJvcHl3Y2V0emtubSJ9.5rroCSCepwuVL_vZ8PtB_A";
 
 let map;
-let stations = []
+let stations = [];
+// Step 3.4
+let mapViewChanged = 0;
 
 async function loadStationData() {
     try {
@@ -57,8 +57,8 @@ async function initMap() {
         paint: {
             // paint params, e.g. colors, thickness, etc.
             'line-color': "green",
-            'line-width': 1,
-            'line-opacity': 1,
+            'line-width': 3,
+            'line-opacity': 0.4,
         },
     });
 
@@ -69,8 +69,8 @@ async function initMap() {
         source: "cambridge_route", // Use the Cambridge data source
         paint: {
             'line-color': "green", // Let's make them a different color to distinguish them
-            'line-width': 1,
-            'line-opacity': 1,
+            'line-width': 3,
+            'line-opacity': 0.4,
         },
     });
 
@@ -78,6 +78,7 @@ async function initMap() {
 
 }
 
+// Step 3.3
 function getCoords (station) {
 	let point = new mapboxgl.LngLat(+station.Long, +station.Lat);
 	let {x, y} = map.project(point);
@@ -90,23 +91,25 @@ onMount(() => {
 
 });
 
-// onMount(() => {
-// 	let map = new mapboxgl.Map({
-// 		container: 'map',
-// 		style: 'mapbox://styles/mapbox/streets-v12',
-// 		zoom: 12,
-// 		center: [-71.0788727679991, 42.36199480654666]
-// 	});
-// })
+// Step 3.4
+$: map?.on("move", evt => mapViewChanged++);
 
 </script>
 
 <!-- -------------- -->
-<h1>Bikes</h1>
+<h1>Bikewatching</h1>
 <!-- <div id="map" /> -->
 
 <div id="map">
-	<svg></svg>
+	<svg>
+        <!-- Step 3.4 -->
+        {#key mapViewChanged}
+            <!-- Step 3.3 -->
+            {#each stations as station} 
+                <circle { ...getCoords(station) } r="5" fill="steelblue" /> 
+            {/each}
+        {/key} 
+    </svg>
 </div>
 
 <style>
@@ -121,6 +124,5 @@ onMount(() => {
     height: 100%;
     pointer-events: none;
 }
-
 
 </style>
