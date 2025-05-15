@@ -62,11 +62,31 @@ async function initMap() {
         },
     });
 
+    // Step 2.4 (Cambridge bike lanes)
+    map.addLayer({
+        id: "cambridge_bike_lanes", // A unique ID for the Cambridge layer
+        type: "line",
+        source: "cambridge_route", // Use the Cambridge data source
+        paint: {
+            'line-color': "green", // Let's make them a different color to distinguish them
+            'line-width': 1,
+            'line-opacity': 1,
+        },
+    });
+
+    
+
+}
+
+function getCoords (station) {
+	let point = new mapboxgl.LngLat(+station.Long, +station.Lat);
+	let {x, y} = map.project(point);
+	return {cx: x, cy: y};
 }
 
 onMount(() => {
 	initMap();
-
+    loadStationData();
 
 });
 
@@ -83,8 +103,24 @@ onMount(() => {
 
 <!-- -------------- -->
 <h1>Bikes</h1>
-<div id="map" />
+<!-- <div id="map" /> -->
+
+<div id="map">
+	<svg></svg>
+</div>
 
 <style>
 @import url("$lib/global.css");
+
+#map svg {
+	/* background: yellow; */
+	/* opacity: 50%; */
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+
 </style>
